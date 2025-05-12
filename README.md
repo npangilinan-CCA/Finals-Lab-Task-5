@@ -1,39 +1,42 @@
 # [Finals Lab Task 5 - Using SQL views and Stored Procedures and Stored Functions](https://github.com/user-attachments/files/20163366/pangilinan_FinalsLabTask5.docx)
 In this portfolio, I showcase how I used SQL views, stored procedures, and functions to handle and work with database data. I included examples like using views to filter information, stored procedures to update records, and functions to pull specific data.
 
-## STEP BY STEP PROCESS
+## Step by Step Process
 
-1. CREATE A VIEW that will display the vendors_code, vendors name, product description p_indate, of all products with p_indate from 2002 onwards
+### Step 1
+- Create a VIEW that will display the vendors_code, vendors name, product description p_indate, of all products with p_indate from 2002 onwards
 
-2. CREATE a VIEW that will display all products whose price range is between 100-150
+### Step 2
+- Create a VIEW that will display all products whose price range is between 100-150
 
-3. Create a VIEW that will COMPUTE for the (TOTAL_PRICE) of ALL PRODUCTS by getting the (P_ONHAND x P_PRICE) Sold by vendors with the following v_code (21344, 23119 and 24288)
+### Step 3
+- Create a VIEW that will COMPUTE for the (TOTAL_PRICE) of ALL PRODUCTS by getting the (P_ONHAND x P_PRICE) Sold by vendors with the following v_code (21344, 23119 and 24288)
 
-4. CREATE a STORED PROCEDURE that WILL take a SINGLE PARAMETER and UPDATED the Name of Vendor ‘Bryson,Inc.’ to ‘Bryson and Co’.
+### Step 4
+- Create a STORED PROCEDURE that WILL take a SINGLE PARAMETER and UPDATED the Name of Vendor ‘Bryson,Inc.’ to ‘Bryson and Co’.
 
-5. CREATE A Function that will take 2 parameters(v_code and v_state) and display All the product description and price based on the parameters passed to the function
+### Step 5
+- Create a Function that will take 2 parameters(v_code and v_state) and display All the product description and price based on the parameters passed to the function
 
-# OUTPUT AND QUERY
+## Query Statements and Table Structures
 
-## TASK 1 QUERY:
-![Image](https://github.com/user-attachments/assets/76f0a35a-aee5-4b47-9741-701ec02a18bc)
-## TASK 1 OUTPUT:
-![Image](https://github.com/user-attachments/assets/eb24af96-20ce-4d81-8778-b7782d68be8e)
-## TASK 2 QUERY:
-![Image](https://github.com/user-attachments/assets/e08d2a2b-fed5-4a0a-8274-37c1ee194eef)
-## TASK 2 (OPTION) QUERY:
-![Image](https://github.com/user-attachments/assets/084e60d2-073d-462e-8733-839082c1c6f7)
-## TASK 2 OUTPUT:
-![Image](https://github.com/user-attachments/assets/13666c4c-81f6-456b-bb61-d94913483842)
-## TASK 3 QUERY:
-![Image](https://github.com/user-attachments/assets/8f1c5fed-e737-41b1-ba32-5ccd06ce7a95)
-## TASK 3 OUTPUT:
-![Image](https://github.com/user-attachments/assets/8c15aa4d-8f08-4c77-9aaf-ed35176a8715)
-## TASK 4 QUERY:
-![Image](https://github.com/user-attachments/assets/42c5597e-37b3-46e2-afaf-fe0834d56c0d)
-## TASK 4 OUTPUT:
-![Image](https://github.com/user-attachments/assets/43575a86-96e6-4ede-b69e-208a82ba7ec9)
-## TASK 5  QUERY:
-![Image](https://github.com/user-attachments/assets/020e793a-a1b5-4762-b1cb-1f4dc68cde28)
-## TASK 5 OUTPUT:
-![Image](https://github.com/user-attachments/assets/add60993-b9e8-4a4f-b6a7-060b069ea4c8)
+## Task 1 Query:
+![Image](https://github.com/user-attachments/assets/f4043ef1-c925-4e65-a405-2d0b06d364c2)
+## Task 2 Query:
+![Image](https://github.com/user-attachments/assets/25531bff-2fe2-4e4d-99dc-39e1ddfc8890)
+## Task 3 Query:
+![Image](https://github.com/user-attachments/assets/8f46711e-6e93-4c3f-9bfa-ba89e044b3b3)
+## Task 4 Query:
+![Image](https://github.com/user-attachments/assets/188d6460-8895-4dc5-9b13-1c5922856b6c)
+## Task 5 Query:
+![Image](https://github.com/user-attachments/assets/124225ef-438a-481e-91db-803461b10d38)
+## Task 1 Table:
+![Image](https://github.com/user-attachments/assets/0ba08499-247a-4f09-8313-e73f9989695e)
+## Task 2 Table:
+![Image](https://github.com/user-attachments/assets/47f3fb41-7d26-458f-8f30-9b4da58f7f4d)
+## Task 3 Table:
+![Image](https://github.com/user-attachments/assets/917bfd75-13a4-4109-b5c7-22995396416e)
+## Task 4 Table:
+![Image](https://github.com/user-attachments/assets/94dcfaea-ad35-4922-a767-c10d0fdd77e6)
+## Task 5 Table:
+![Image](https://github.com/user-attachments/assets/b8f1b2e7-a5ce-43a8-b79d-ea2bd75d4f04)
