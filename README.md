@@ -1,4 +1,4 @@
-# [Finals Lab Task 5 - - Using SQL views and Stored Procedures and Stored Functions](https://github.com/user-attachments/files/20163366/pangilinan_FinalsLabTask5.docx)
+# [Finals Lab Task 5 - Using SQL views and Stored Procedures and Stored Functions](https://github.com/user-attachments/files/20163366/pangilinan_FinalsLabTask5.docx)
 In this portfolio, I showcase how I used SQL views, stored procedures, and functions to handle and work with database data. I included examples like using views to filter information, stored procedures to update records, and functions to pull specific data.
 
 ## STEP BY STEP PROCESS
