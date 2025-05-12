@@ -1,0 +1,700 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finals Lab Task 2 - Transforming ER Model to Relational Tables</title>
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom Cursor */
+        * {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M7,2 L17,12 L7,22 L7,2" fill="silver" stroke="white" stroke-width="1"/><text x="14" y="14" fill="white" font-size="8">♱</text></svg>') 7 12, auto;
+        }
+
+        /* Hover Cursor */
+        a:hover, button:hover, .logo:hover, .frame-corner:hover, ul li:hover {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M7,2 L17,12 L7,22 L7,2" fill="white" stroke="silver" stroke-width="1"/><text x="14" y="14" fill="silver" font-size="8">♱</text></svg>') 7 12, pointer;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+            background: #000;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: linear-gradient(90deg, #000, #111);
+            border: 1px solid rgba(192, 192, 192, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #333, #666);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #444, #777);
+        }
+
+        :root {
+            --chrome-black: #000000;
+            --chrome-silver: #C0C0C0;
+            --chrome-white: #FFFFFF;
+            --cross-pink: #FFB6C1;
+            --cross-blue: #4169E1;
+            --cross-yellow: #FFD700;
+            --cross-red: #FF0000;
+            --cross-green: #00FF00;
+        }
+
+        body {
+            margin: 0;
+            padding: 2rem;
+            font-family: 'Playfair Display', serif;
+            color: white;
+            background: black;
+            line-height: 1.6;
+            font-size: 18px;
+            overflow-x: hidden;
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .loading-content {
+            text-align: center;
+            position: relative;
+        }
+
+        .loading-content::before,
+        .loading-content::after {
+            content: '♱';
+            position: absolute;
+            font-size: 2rem;
+            color: var(--chrome-silver);
+            animation: rotateCross 4s linear infinite;
+        }
+
+        .loading-content::before {
+            left: -50px;
+            animation-delay: -2s;
+        }
+
+        .loading-content::after {
+            right: -50px;
+            animation-delay: -1s;
+        }
+
+        .loading-logo {
+            font-family: 'UnifrakturCook', cursive;
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(145deg, 
+                #e0e0e0, #aaa, #f5f5f5, #888,
+                #e0e0e0, #aaa, #f5f5f5, #888
+            );
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: loadingColorCycle 3s infinite;
+            text-shadow: 
+                0 0 20px rgba(255,255,255,0.2),
+                0 0 40px rgba(255,255,255,0.1);
+        }
+
+        .loading-cross {
+            font-size: 3rem;
+            margin: 2rem 0;
+            animation: loadingSpin 2s infinite linear;
+            color: var(--chrome-silver);
+            text-shadow: 0 0 10px var(--chrome-silver);
+        }
+
+        .loading-bar-container {
+            width: 300px;
+            height: 3px;
+            background: rgba(192, 192, 192, 0.1);
+            margin: 2rem auto;
+            position: relative;
+            overflow: hidden;
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .loading-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(
+                90deg,
+                var(--chrome-silver),
+                var(--chrome-white),
+                var(--chrome-silver)
+            );
+            animation: loadingProgress 2s ease-out forwards;
+            box-shadow: 0 0 15px var(--chrome-silver);
+        }
+
+        .loading-text {
+            font-family: 'Playfair Display', serif;
+            color: var(--chrome-silver);
+            font-size: 1.2rem;
+            letter-spacing: 5px;
+            margin-top: 1rem;
+            opacity: 0.8;
+            animation: pulse 1.5s infinite;
+        }
+
+       /* Enhanced Title Styles */
+        .title-container {
+            position: relative;
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+        }
+
+        .main-title {
+            position: relative;
+            display: inline-block;
+            font-family: 'UnifrakturCook', cursive;
+            font-size: 3rem !important;
+            background: linear-gradient(45deg, #c0c0c0, #ffffff, #808080) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            transition: all 0.3s ease;
+            padding: 1rem !important;
+            margin: 0 !important;
+            cursor: pointer;
+        }
+
+        .main-title::before,
+        .main-title::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent,
+                #FFB6C1, #4169E1, #FFD700, #FF0000, #00FF00,
+                transparent
+            );
+            transition: width 0.5s ease;
+        }
+
+        .main-title::before {
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+        }
+
+        .main-title::after {
+            right: 50%;
+            bottom: 0;
+            transform: translateX(50%);
+        }
+
+        .title-container:hover .main-title::before,
+        .title-container:hover .main-title::after {
+            width: 100%;
+        }
+
+        .title-container:hover .main-title {
+            text-shadow: 
+                0 0 10px rgba(255, 255, 255, 0.5),
+                0 0 20px rgba(255, 255, 255, 0.3),
+                0 0 30px rgba(255, 255, 255, 0.1);
+            letter-spacing: 2px;
+            transform: scale(1.05);
+        }
+
+        .title-container::before,
+        .title-container::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 2px;
+            height: 0;
+            background: linear-gradient(to bottom,
+                transparent,
+                var(--chrome-silver),
+                transparent
+            );
+            transition: height 0.3s ease;
+        }
+
+        .title-container::before {
+            left: 0;
+        }
+
+        .title-container::after {
+            right: 0;
+        }
+
+        .title-container:hover::before,
+        .title-container:hover::after {
+            height: 80%;
+            transform: translateY(-50%);
+        }
+        }
+
+       /* Enhanced Section Styles */
+        .section {
+            margin: 3rem 0;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--chrome-silver);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 
+                0 0 20px rgba(192, 192, 192, 0.2),
+                0 0 40px rgba(192, 192, 192, 0.1);
+        }
+
+        .section-title {
+            font-family: 'UnifrakturCook', cursive;
+            font-size: 2.4rem;
+            background: linear-gradient(45deg, 
+                var(--cross-green), var(--cross-yellow), var(--cross-red),
+                var(--cross-blue), var(--cross-pink)
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 300% 300%;
+            animation: colorShift 10s infinite;
+            margin: 2rem 0;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--chrome-silver);
+        }
+
+        .subsection-title {
+            font-family: 'UnifrakturCook', cursive;
+            font-size: 2rem;
+            color: var(--chrome-silver);
+            margin: 1.5rem 0;
+            transition: all 0.3s ease;
+        }
+
+        /* Enhanced List Styles */
+        ul, ol {
+            list-style: none;
+            padding-left: 1rem;
+        }
+
+        li {
+            margin: 0.8rem 0;
+            transition: all 0.3s ease;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        li::before {
+            content: '♱';
+            position: absolute;
+            left: 0;
+            animation: colorShift 10s infinite;
+            background: linear-gradient(45deg, 
+                var(--cross-green), var(--cross-yellow), var(--cross-red),
+                var(--cross-blue), var(--cross-pink)
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 300% 300%;
+        }
+
+        li:hover {
+            transform: translateX(15px);
+            background: linear-gradient(45deg, 
+                rgba(144, 238, 144, 0.1),
+                rgba(255, 215, 0, 0.1),
+                rgba(255, 99, 71, 0.1),
+                rgba(65, 105, 225, 0.1),
+                rgba(255, 182, 193, 0.1)
+            );
+            background-size: 300% 300%;
+            animation: colorShift 10s infinite;
+            border-radius: 5px;
+            padding: 10px 20px;
+        }
+
+        /* Chrome Frame */
+        .chrome-frame {
+            position: relative;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--chrome-silver);
+            transition: all 0.4s ease;
+            margin: 2rem 0;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .chrome-frame:hover {
+            transform: scale(1.02);
+            box-shadow: 
+                0 0 30px rgba(192, 192, 192, 0.2),
+                0 0 60px rgba(192, 192, 192, 0.1);
+        }
+
+        /* Animations */
+        @keyframes shimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes rotateCross {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes loadingSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes loadingColorCycle {
+            0% { background-position: 0% 50%; filter: hue-rotate(0deg); }
+            50% { background-position: 100% 50%; filter: hue-rotate(180deg); }
+            100% { background-position: 0% 50%; filter: hue-rotate(360deg); }
+        }
+
+        @keyframes loadingProgress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border: 2px solid var(--chrome-silver);
+            box-shadow: 0 0 20px rgba(192, 192, 192, 0.3);
+            position: relative;
+            backdrop-filter: blur(5px);
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 1s ease-in;
+        }
+
+        .container.loaded {
+            opacity: 1;
+        }
+
+        /* Description */
+        .description {
+            color: var(--chrome-white);
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin: 2rem 0;
+            text-align: justify;
+            padding: 0 1rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Floating Crosses */
+        .colored-cross {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.5;
+            animation: float 20s linear infinite;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 0 0 10px currentColor;
+        }
+        
+         /* Animations */
+        @keyframes colorShift {
+            0% {
+                background-position: 0% 50%;
+                filter: hue-rotate(0deg);
+            }
+            25% {
+                background-position: 100% 50%;
+                filter: hue-rotate(90deg);
+            }
+            50% {
+                background-position: 50% 100%;
+                filter: hue-rotate(180deg);
+            }
+            75% {
+                background-position: 50% 0%;
+                filter: hue-rotate(270deg);
+            }
+            100% {
+                background-position: 0% 50%;
+                filter: hue-rotate(360deg);
+            }
+        }
+        
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-logo">Finals Lab Task 5</div>
+            <div class="loading-cross">♱</div>
+            <div class="loading-bar-container">
+                <div class="loading-bar"></div>
+            </div>
+            <div class="loading-text">LOADING...</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="title-container">
+            <div class="main-title">Finals Lab Task 5 - Using SQL views and Stored Procedures and Stored Functions</div>
+        </div>
+
+        <p class="description">
+            In this portfolio, I showcase how I used SQL views, stored procedures, and functions to handle and work with database data. I included examples like using views to filter information, stored procedures to update records, and functions to pull specific data.
+        </p>
+
+        <h2 class="section-title">Step by Step Process</h2>
+        
+        <h3 class="section-title">Step 1</h3>
+        <ul class="process-list">
+            <li>Create a VIEW that will display the vendors_code, vendors name, product description p_indate, of all products with p_indate from 2002 onwards.</li>
+        </ul>
+
+        <h3 class="section-title">Step 2</h3>
+        <ul class="process-list">
+            <li>Create a VIEW that will display all products whose price range is between 100-150.</li>
+        </ul>
+
+        <h3 class="section-title">Step 3</h3>
+        <ul class="process-list">
+            <li>Create a VIEW that will COMPUTE for the (TOTAL_PRICE) of ALL PRODUCTS by getting the (P_ONHAND x P_PRICE) Sold by vendors with the following v_code (21344, 23119 and 24288).</li>
+        </ul>
+        
+           <h3 class="section-title">Step 4</h3>
+        <ul class="process-list">
+            <li>Create a STORED PROCEDURE that WILL take a SINGLE PARAMETER and UPDATED the Name of Vendor ‘Bryson,Inc.’ to ‘Bryson and Co’.</li>
+        </ul>
+        
+         <h3 class="section-title">Step 5</h3>
+        <ul class="process-list">
+            <li>Create a function that will take 2 parameters(v_code and v_state) and display All the product description and price based on the parameters passed to the function.</li>
+        </ul>
+        
+        <h2 class="section-title">Query Statements and Table Structures</h2>
+        
+        <h3 class="section-title">Task 1 Query</h3>
+        <div class="chrome-frame">
+            <div class="frame-corner top-left"></div>
+            <div class="frame-corner top-right"></div>
+            <div class="frame-corner bottom-left"></div>
+            <div class="frame-corner bottom-right"></div>
+            <img src="https://private-user-images.githubusercontent.com/201303733/442807951-f4043ef1-c925-4e65-a405-2d0b06d364c2.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDcwNjY3MjgsIm5iZiI6MTc0NzA2NjQyOCwicGF0aCI6Ii8yMDEzMDM3MzMvNDQyODA3OTUxLWY0MDQzZWYxLWM5MjUtNGU2NS1hNDA1LTJkMGIwNmQzNjRjMi5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUwNTEyJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MDUxMlQxNjEzNDhaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT0xOTJmNmQyNWI1YzM5YTFmYWIwYmQ1YTY1NzBkODk2ZjcwZTRlMWJiN2YzYTE1MGI2ZTgzYjVkY2RiODAwYzVjJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.hf9hoT5Ard6nKCchLG1dZ0fZzJoM9ZqNsJx8ZkbXnOg" alt="T1 Query">
+        </div>
+
+        <h3 class="section-title">Task 2 Query</h3>
+        <div class="chrome-frame">
+            <div class="frame-corner top-left"></div>
+            <div class="frame-corner top-right"></div>
+            <div class="frame-corner bottom-left"></div>
+            <div class="frame-corner bottom-right"></div>
+            <img src="https://private-user-images.githubusercontent.com/201303733/442808366-25531bff-2fe2-4e4d-99dc-39e1ddfc8890.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDcwNjY4MzUsIm5iZiI6MTc0NzA2NjUzNSwicGF0aCI6Ii8yMDEzMDM3MzMvNDQyODA4MzY2LTI1NTMxYmZmLTJmZTItNGU0ZC05OWRjLTM5ZTFkZGZjODg5MC5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUwNTEyJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MDUxMlQxNjE1MzVaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT1hMTg4ZjRhNjBlZWJiN2Y3Y2E2ZmJhZDZjNDA2NzQxYWJhZjU0ZjYxMWRiZmM5YzM3NWFhZTA3ZjVhYTkxOWRlJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.4EyE78UwuN13jpE-WVRJQrmkrVKVy6m6AXt2L-YuFjw" alt="T2 Query">
+        </div>
+
+        <h3 class="section-title">Task 3 Query</h3>
+        <div class="chrome-frame">
+            <div class="frame-corner top-left"></div>
+            <div class="frame-corner top-right"></div>
+            <div class="frame-corner bottom-left"></div>
+            <div class="frame-corner bottom-right"></div>
+            <img src="https://private-user-images.githubusercontent.com/201303733/442817158-8f46711e-6e93-4c3f-9bfa-ba89e044b3b3.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDcwNjY5MjAsIm5iZiI6MTc0NzA2NjYyMCwicGF0aCI6Ii8yMDEzMDM3MzMvNDQyODE3MTU4LThmNDY3MTFlLTZlOTMtNGMzZi05YmZhLWJhODllMDQ0YjNiMy5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUwNTEyJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MDUxMlQxNjE3MDBaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT0zNzA0MWE4M2IzY2VmN2Q4OTA1YWVlMmQ3ZDNhZDdmMjg1NzBiM2VkODdlNDQ5Y2Y2ZGJlMTMzZDc4ZTVjYWNjJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.q9FnlhoUkNiClHBZipvqqvQPu2qt5G5uPv-DdF5dok8" alt="T3 Query">
+        </div>
+
+        <h3 class="section-title">Task 4 Query</h3>
+        <div class="chrome-frame">
+            <div class="frame-corner top-left"></div>
+            <div class="frame-corner top-right"></div>
+            <div class="frame-corner bottom-left"></div>
+            <div class="frame-corner bottom-right"></div>
+            <img src="https://private-user-images.githubusercontent.com/201303733/442817230-188d6460-8895-4dc5-9b13-1c5922856b6c.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDcwNjY5ODAsIm5iZiI6MTc0NzA2NjY4MCwicGF0aCI6Ii8yMDEzMDM3MzMvNDQyODE3MjMwLTE4OGQ2NDYwLTg4OTUtNGRjNS05YjEzLTFjNTkyMjg1NmI2Yy5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUwNTEyJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MDUxMlQxNjE4MDBaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT01ZmZhZjM1Y2ViMzM5ODA1NGQ4Y2Q5ZDdmMjZhYTgxYTNlOTJjYjZkNzE4OGIzMDVhYjQwNWZmNTg5OGUyZTdmJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.O-3Zy0hTXrecN12NvjoCRrPIlBEQxMmhbOaVC36G6JM" alt="T4 Query">
+        </div>
+        
+          <h3 class="section-title">Task 5 Query</h3>
+        <div class="chrome-frame">
+            <div class="frame-corner top-left"></div>
+            <div class="frame-corner top-right"></div>
+            <div class="frame-corner bottom-left"></div>
+            <div class="frame-corner bottom-right"></div>
+            <img src="https://private-user-images.githubusercontent.com/201303733/442817278-124225ef-438a-481e-91db-803461b10d38.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDcwNjcwODIsIm5iZiI6MTc0NzA2Njc4MiwicGF0aCI6Ii8yMDEzMDM3MzMvNDQyODE3Mjc4LTEyNDIyNWVmLTQzOGEtNDgxZS05MWRiLTgwMzQ2MWIxMGQzOC5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUwNTEyJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MDUxMlQxNjE5NDJaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT01ZWYwZGZlNzM3ODU0ODQ1YWFkMGFjM2M0ZDVkM2E0Njk2NDhjNTIwMTNhNDZjMzUwZWQ1MTNhZGM2NmMwZjlhJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.pYQDKBWbwpMqGKbM-Gc5D1gNb_krPfmhufPX0Q2KEQc" alt="T5 Query">
+        </div>
+        
+           <h3 class="section-title">Task 1 Table</h3>
+        <div class="chrome-frame">
+            <div class="frame-corner top-left"></div>
+            <div class="frame-corner top-right"></div>
+            <div class="frame-corner bottom-left"></div>
+            <div class="frame-corner bottom-right"></div>
+            <img src="https://private-user-images.githubusercontent.com/201303733/442817487-0ba08499-247a-4f09-8313-e73f9989695e.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDcwNjcxNzcsIm5iZiI6MTc0NzA2Njg3NywicGF0aCI6Ii8yMDEzMDM3MzMvNDQyODE3NDg3LTBiYTA4NDk5LTI0N2EtNGYwOS04MzEzLWU3M2Y5OTg5Njk1ZS5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUwNTEyJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MDUxMlQxNjIxMTdaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT1mZjE5YTgzNGRkMjMwMmUzMjYwY2ZhMTMzODUwNzdmZGVkYmE2MDc3ZDdmNDJhMzBkNTAzZDAyZTk2MjliMDY0JlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.P8d7SWHAsFy6RWXxG-jlGv7YwHBzedhTE-vZ3QOhdIM" alt="T1 Table">
+        </div>
+        
+            <h3 class="section-title">Task 2 Table</h3>
+        <div class="chrome-frame">
+            <div class="frame-corner top-left"></div>
+            <div class="frame-corner top-right"></div>
+            <div class="frame-corner bottom-left"></div>
+            <div class="frame-corner bottom-right"></div>
+            <img src="https://private-user-images.githubusercontent.com/201303733/442817532-47f3fb41-7d26-458f-8f30-9b4da58f7f4d.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDcwNjc3NDIsIm5iZiI6MTc0NzA2NzQ0MiwicGF0aCI6Ii8yMDEzMDM3MzMvNDQyODE3NTMyLTQ3ZjNmYjQxLTdkMjYtNDU4Zi04ZjMwLTliNGRhNThmN2Y0ZC5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUwNTEyJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MDUxMlQxNjMwNDJaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT01ODgxM2IyMWZiOTExZDdmYWVkODE3NzM0MDAxOTUyODRkODc1OTQ2MTQ0MzM0NmU2MjBjNzg1ODhmNTgyYWIzJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.95w9x16Ycow3DJW9ZlFbBc9X2H5uX43DI_PQ9auxzLk" alt="T2 Table">
+        </div>
+        
+        <h3 class="section-title">Task 3 Table</h3>
+        <div class="chrome-frame">
+            <div class="frame-corner top-left"></div>
+            <div class="frame-corner top-right"></div>
+            <div class="frame-corner bottom-left"></div>
+            <div class="frame-corner bottom-right"></div>
+            <img src="https://private-user-images.githubusercontent.com/201303733/442817608-917bfd75-13a4-4109-b5c7-22995396416e.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDcwNjc4MTQsIm5iZiI6MTc0NzA2NzUxNCwicGF0aCI6Ii8yMDEzMDM3MzMvNDQyODE3NjA4LTkxN2JmZDc1LTEzYTQtNDEwOS1iNWM3LTIyOTk1Mzk2NDE2ZS5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUwNTEyJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MDUxMlQxNjMxNTRaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT0yYWIyNTNlYjUwNzhjNDdlZDI0ZDg4NWJhOGM1NmZlMTNiMzJkZDY0MGZhMTBkNjI3YzBjNTc2MDk1NWU2MzBkJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.F5sMjpxTHKLVmcBD_4wm-V4g73bi3bCDEXwZ8WDQI8M" alt="T3 Table">
+        </div>
+        
+         <h3 class="section-title">Task 4 Table</h3>
+        <div class="chrome-frame">
+            <div class="frame-corner top-left"></div>
+            <div class="frame-corner top-right"></div>
+            <div class="frame-corner bottom-left"></div>
+            <div class="frame-corner bottom-right"></div>
+            <img src="https://private-user-images.githubusercontent.com/201303733/442817666-94dcfaea-ad35-4922-a767-c10d0fdd77e6.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDcwNjc4NDcsIm5iZiI6MTc0NzA2NzU0NywicGF0aCI6Ii8yMDEzMDM3MzMvNDQyODE3NjY2LTk0ZGNmYWVhLWFkMzUtNDkyMi1hNzY3LWMxMGQwZmRkNzdlNi5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUwNTEyJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MDUxMlQxNjMyMjdaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT0xMWYyMzEwNjkzZWEzNTAxMTdhZTk5MDRhNGFlNThhNmQ1MmFlZTQ4ZWU3ZDAzODJhNTRlNjM5N2NjZTU0MzQwJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.S_OzL_OlviRM8LMmLtaF6cllYg0medGbinccISxdePE" alt="T4 Table">
+        </div>
+        
+         <h3 class="section-title">Task 5 Table</h3>
+        <div class="chrome-frame">
+            <div class="frame-corner top-left"></div>
+            <div class="frame-corner top-right"></div>
+            <div class="frame-corner bottom-left"></div>
+            <div class="frame-corner bottom-right"></div>
+            <img src="https://private-user-images.githubusercontent.com/201303733/442817742-b8f1b2e7-a5ce-43a8-b79d-ea2bd75d4f04.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDcwNjc4NzYsIm5iZiI6MTc0NzA2NzU3NiwicGF0aCI6Ii8yMDEzMDM3MzMvNDQyODE3NzQyLWI4ZjFiMmU3LWE1Y2UtNDNhOC1iNzlkLWVhMmJkNzVkNGYwNC5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUwNTEyJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MDUxMlQxNjMyNTZaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT01ZWI3MjFlYzFjYjNiMzZhZThjMGNiYTA3ZmY1OTkxOTgwYmFmZjM1NTRmZWMzYzc1NzU3NDlkNDkzNjM3YWM2JlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.QukE8XLOdl0lSYrlst_bkBZVqN9Sln1EA3_itULexKs" alt="T5 Table">
+        </div>
+    
+    </div>
+
+    <script>
+        // Loading screen handler
+        document.addEventListener('DOMContentLoaded', () => {
+            const loadingScreen = document.getElementById('loadingScreen');
+            const container = document.querySelector('.container');
+            
+            setTimeout(() => {
+                loadingScreen.style.opacity = '0';
+                container.classList.add('loaded');
+                
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            }, 2000);
+        });
+
+        // Enhanced title interaction
+        document.querySelector('.title-container').addEventListener('mousemove', (e) => {
+            const title = document.querySelector('.main-title');
+            const subtitle = document.querySelector('.subtitle');
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const angleX = (y - centerY) / 20;
+            const angleY = (centerX - x) / 20;
+            
+            title.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg) scale(1.1)`;
+            subtitle.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg) scale(1.05)`;
+        });
+
+        document.querySelector('.title-container').addEventListener('mouseleave', () => {
+            const title = document.querySelector('.main-title');
+            const subtitle = document.querySelector('.subtitle');
+            title.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+            subtitle.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+        });
+
+        // Enhanced floating crosses
+        function createColoredCross() {
+            const colors = ['#FFB6C1', '#4169E1', '#FFD700', '#FF0000', '#00FF00'];
+            const cross = document.createElement('div');
+            cross.className = 'colored-cross';
+            cross.innerHTML = '♱';
+            cross.style.left = Math.random() * 100 + 'vw';
+            cross.style.color = colors[Math.floor(Math.random() * colors.length)];
+            cross.style.animationDuration = (15 + Math.random() * 10) + 's';
+            document.body.appendChild(cross);
+
+            setTimeout(() => {
+                cross.remove();
+            }, 20000);
+        }
+
+        // Create initial crosses
+        for (let i = 0; i < 20; i++) {
+            createColoredCross();
+        }
+
+        // Add new crosses periodically
+        setInterval(createColoredCross, 2000);
+
+        // Add hover effect to list items
+        document.querySelectorAll('.process-list li').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(20px) scale(1.02)';
+            });
+
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
